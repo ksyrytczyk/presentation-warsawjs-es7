@@ -181,7 +181,7 @@
     <section class="slide">
         <div class="with-code">
             <h2>Exponential</h2>
-<div class="executor-code" style="height:200px">let a, b
+<div class="executor-code" data-font-size="18" style="height:200px">let a, b
 
 a = 2; b = 8;
 console.log('2 ** 8 is ', a ** b);
@@ -216,7 +216,7 @@ console.log('Math.pow(2, 1024)', Math.pow(a, b));
     <section class="slide">
         <div class="with-code">
             <h2>Array.includes</h2>
-<div class="executor-code" style="height:200px">let stack, needle;
+<div class="executor-code" data-font-size="18" style="height:200px">let stack, needle;
 
 stack = [1, 2, 3]; needle = 2;
 console.log('2 in [1, 2, 3] ', stack.includes(needle));
@@ -248,7 +248,7 @@ console.log(`c in [a, b, c] from 1 position`, stack.includes(needle, 1));
     <section class="slide">
         <div class="with-code">
             <h2>SIMD</h2>
-<div class="executor-code" style="height:200px">let a, b, raw, verbose;
+<div class="executor-code" data-font-size="18" style="height:200px">let a, b, raw, verbose;
 
 a = SIMD.Float32x4(1, 2, 3, 4);
 b = SIMD.Float32x4(5, 10, 15, 20);
@@ -276,7 +276,7 @@ console.log(raw);
     <section class="slide">
         <div class="with-code">
             <h2>Async</h2>
-<div class="executor-code" style="height:200px">function wait(t){
+<div class="executor-code" data-font-size="18" style="height:200px">function wait(t){
     return new Promise((r) => setTimeout(r, t));
 }
 
@@ -300,7 +300,7 @@ asyncFoo().then(() => console.log("3"));
     <section class="slide">
         <div class="with-code">
             <h2>Object.observe</h2>
-<div class="executor-code" style="height:200px">let obj = { a: 1, b: { c: 'Lorem', d: 'Ipsum' } };
+<div class="executor-code" data-font-size="18" style="height:200px">let obj = { a: 1, b: { c: 'Lorem', d: 'Ipsum' } };
 let fnList = {
     add: () => { obj.prop1 = 12 },
     delete: () => { delete obj.b.c },
@@ -330,7 +330,7 @@ setTimeout(() => { fnList['preventExtensions'](); }, 4000);
     <section class="slide">
         <div class="with-code">
             <h2>Rest/Spread Properties</h2>
-<div class="executor-code" style="height:200px">let { a, b, ...rest } = { a: 1, b: 2, c: 3, d: { e: NaN } };
+<div class="executor-code" data-font-size="18" style="height:200px">let { a, b, ...rest } = { a: 1, b: 2, c: 3, d: { e: NaN } };
 
 console.log(`a is ${a}`);
 console.log(`b is ${b}`);
@@ -348,7 +348,7 @@ console.log(`rest.d.e is ${rest.d.e}`);
     <section class="slide">
         <div class="with-code">
             <h2>Trailing commas</h2>
-<div class="executor-code" style="height:200px">function foo(
+<div class="executor-code" data-font-size="18" style="height:200px">function foo(
     param1,
     param2, // Extra comma
 ) { 
@@ -376,7 +376,7 @@ foo(
     <section class="slide">
         <div class="with-code">
             <h2>Typed Objects</h2>
-<div class="executor-code" style="height:200px">var Point = new StructType({
+<div class="executor-code" data-font-size="18" style="height:200px">var Point = new StructType({
     x: int32,
     y: int32
 });
@@ -400,7 +400,7 @@ console.log(point);
     <section class="slide">
         <div class="with-code">
             <h2>Export-from Statements</h2>
-<div class="executor-code" style="height:200px">import {v} from "mod";
+<div class="executor-code" data-font-size="18" style="height:200px">import {v} from "mod";
 
 export {v} from "mod";
 </div>
@@ -417,7 +417,7 @@ export {v} from "mod";
     <section class="slide">
         <div class="with-code">
             <h2 style="font-size:42px">Class/Property Decorators</h2>
-<div class="executor-code" style="height:200px">class Meal {
+<div class="executor-code" data-font-size="18" style="height:200px">class Meal {
     @readonly
     entree = 'steak';
 }
@@ -454,7 +454,7 @@ dinner.entree = 'salmon';
                     }
                 );
             </script>
-<div class="executor-code" style="height:200px">
+<div class="executor-code" data-font-size="18" style="height:200px">
 let button = document.getElementById('button');
 let clicks = Observable.fromEvent(button, 'click');
 
@@ -481,7 +481,7 @@ let sub = clicks.forEach(
     <section class="slide">
         <div class="with-code">
             <h2>trimLeft/trimRight</h2>
-<div class="executor-code" style="height:200px">let a, b, c, str = '       \t\t    X  \n\n            ';
+<div class="executor-code" data-font-size="18" style="height:200px">let a, b, c, str = '       \t\t    X  \n\n            ';
 
 a = str;
 console.log(a, a.length);
@@ -503,7 +503,7 @@ console.log(c, c.length);
     <section class="slide">
         <div class="with-code">
             <h2>Class Properties</h2>
-<div class="executor-code" style="height:200px">class App {
+<div class="executor-code" data-font-size="18" style="height:200px">class App {
     version = 1.2;
     title = 'Lorem ipsum';
     name = this.title.toLowerCase().replace(' ', '_');
@@ -526,7 +526,7 @@ new App();
     <section class="slide">
         <div class="with-code">
             <h2>padLeft/padRight</h2>
-<div class="executor-code" style="height:200px">let a, b, c, d, str = 'X';
+<div class="executor-code" data-font-size="18" style="height:200px">let a, b, c, d, str = 'X';
 
 a = str.padLeft(10);
 console.log(a, a.length);

@@ -958,8 +958,8 @@ window.shower = (function(window, document, undefined) {
 			case 33: // PgUp
 			case 38: // Up
 			case 37: // Left
-			case 72: // H
-			case 75: // K
+			//case 72: // H
+			//case 75: // K
 				if (e.altKey || e.ctrlKey || e.metaKey) { return; }
 				e.preventDefault();
 				shower._turnPreviousSlide();
@@ -968,8 +968,8 @@ window.shower = (function(window, document, undefined) {
 			case 34: // PgDown
 			case 40: // Down
 			case 39: // Right
-			case 76: // L
-			case 74: // J
+			//case 76: // L
+			//case 74: // J
 				if (e.altKey || e.ctrlKey || e.metaKey) { return; }
 				e.preventDefault();
 				shower._turnNextSlide();
@@ -985,7 +985,7 @@ window.shower = (function(window, document, undefined) {
 				shower.last();
 			break;
 
-			case 9: // Tab (Shift)
+			//case 9: // Tab (Shift)
 			case 32: // Space (Shift)
 				if (e.altKey || e.ctrlKey || e.metaKey) { return; }
 				e.preventDefault();

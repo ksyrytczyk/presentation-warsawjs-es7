@@ -67,7 +67,7 @@
 	__webpack_require__(27);
 	__webpack_require__(28);
 
-	var main = function main() {
+	function main() {
 	    var $instances = window.document.querySelectorAll('.executor-code');
 
 	    Array.prototype.forEach.call($instances, function ($instance) {
@@ -83,15 +83,16 @@
 
 	        return new _coreExecutor2['default']($instance, settings);
 	    });
-	};
+	}
 
 	// If you attach executor.js after DOM is loaded.
 	if (window.document.readyState === 'complete') {
 	    main();
-	} else {
+
 	    // If you attach executor.js before DOM is loaded.
-	    window.addEventListener('load', main);
-	}
+	} else {
+	        window.addEventListener('load', main);
+	    }
 
 	// Exports to global namespace.
 	window.Executor = _coreExecutor2['default'];
@@ -219,17 +220,11 @@
 	        value: function buildToolbar() {
 	            this.aceHelper = new _editorAceHelper2['default']();
 
-	            // 1. Auto evaluate
 	            this.autoEvaluate = this.toolbar.add(new _toolbarAutoEvaluateCheckbox2['default']());
-	            // 2. Environment
 	            this.selectEnvironment = this.toolbar.add(new _toolbarSelectEnvironment2['default']());
-	            // 3. Layout
 	            this.layoutSwitcher = this.toolbar.add(new _toolbarLayoutSwitcher2['default']());
-	            // 4. Maximize
 	            this.maximizeButton = this.toolbar.add(new _toolbarMaximizeButton2['default']());
-	            // 5. Font Size
 	            this.fontSizeInput = this.toolbar.add(new _toolbarFontSizeInput2['default']());
-	            // 6. Execute
 	            this.executeButton = this.toolbar.add(new _toolbarExecuteButton2['default']());
 
 	            this.resultsWindow = new _resultResultsWindow2['default']();
@@ -289,24 +284,12 @@
 	            });
 
 	            // Ad 6. Execute
-	            this.executeButton.setup(function () {
-	                _this.resultsWindow.save();
-	                _this.resultsWindow.override();
-
-	                runCode();
-	            });
+	            this.executeButton.setup(runCode);
 
 	            // Results board
 	            // -------------
 
-	            this.aceHelper.editor.on('focus', function () {
-	                _this.resultsWindow.save();
-	                _this.resultsWindow.override();
-	            });
-
-	            this.aceHelper.editor.on('blur', function () {
-	                _this.resultsWindow.prevent();
-	            });
+	            this.resultsWindow.setup();
 
 	            this.$main.appendChild(this.resultsWindow.$el);
 	        }
@@ -315,11 +298,8 @@
 	        value: function applySettings() {
 	            var fontSize = this.settings.fontSize;
 
-	            // Editor
 	            this.aceHelper.editor.setFontSize(fontSize);
-	            // Toolbar
 	            this.fontSizeInput.$input.value = fontSize;
-	            // Results Window
 	            this.resultsWindow.$el.style.fontSize = fontSize + 'px';
 	        }
 	    }, {
@@ -328,7 +308,7 @@
 	            try {
 	                _commonExecuteManager2['default'].execute(name, code);
 	            } catch (e) {
-	                this.resultsWindow.add(e.message);
+	                console.error(e.message);
 	            }
 
 	            this.resultsWindow.print();
@@ -374,9 +354,11 @@
 	        key: 'add',
 	        value: function add(item) {
 	            var $item = window.document.createElement('div');
+
 	            $item.classList.add('executor-toolbar-control');
 	            $item.appendChild(item.$el);
 	            this.$el.appendChild($item);
+
 	            return item;
 	        }
 	    }]);
@@ -543,20 +525,22 @@
 	 */
 	Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
 	  ? global.TYPED_ARRAY_SUPPORT
-	  : (function () {
-	      function Bar () {}
-	      try {
-	        var arr = new Uint8Array(1)
-	        arr.foo = function () { return 42 }
-	        arr.constructor = Bar
-	        return arr.foo() === 42 && // typed array instances can be augmented
-	            arr.constructor === Bar && // constructor can be set
-	            typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-	            arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
-	      } catch (e) {
-	        return false
-	      }
-	    })()
+	  : typedArraySupport()
+
+	function typedArraySupport () {
+	  function Bar () {}
+	  try {
+	    var arr = new Uint8Array(1)
+	    arr.foo = function () { return 42 }
+	    arr.constructor = Bar
+	    return arr.foo() === 42 && // typed array instances can be augmented
+	        arr.constructor === Bar && // constructor can be set
+	        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+	        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+	  } catch (e) {
+	    return false
+	  }
+	}
 
 	function kMaxLength () {
 	  return Buffer.TYPED_ARRAY_SUPPORT
@@ -1510,7 +1494,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-	  this[offset] = value
+	  this[offset] = (value & 0xff)
 	  return offset + 1
 	}
 
@@ -1527,7 +1511,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -1541,7 +1525,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = value
+	    this[offset + 1] = (value & 0xff)
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -1563,7 +1547,7 @@
 	    this[offset + 3] = (value >>> 24)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 1] = (value >>> 8)
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	  } else {
 	    objectWriteUInt32(this, value, offset, true)
 	  }
@@ -1578,7 +1562,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = value
+	    this[offset + 3] = (value & 0xff)
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -1631,7 +1615,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
 	  if (value < 0) value = 0xff + value + 1
-	  this[offset] = value
+	  this[offset] = (value & 0xff)
 	  return offset + 1
 	}
 
@@ -1640,7 +1624,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -1654,7 +1638,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = value
+	    this[offset + 1] = (value & 0xff)
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -1666,7 +1650,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	    this[offset + 1] = (value >>> 8)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 3] = (value >>> 24)
@@ -1685,7 +1669,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = value
+	    this[offset + 3] = (value & 0xff)
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -2551,19 +2535,20 @@
 	        key: 'compile',
 	        value: function compile() {
 	            this.$el = window.document.createDocumentFragment();
-	            var $span = window.document.createElement('span');
-	            $span.appendChild(window.document.createTextNode('Layout: '));
-	            this.$el.appendChild($span);
+	            this.$el.appendChild(LayoutSwitcher.buildSpan());
 
 	            var $ul = window.document.createElement('ul');
+
 	            this.$horizontal = window.document.createElement('i');
 	            this.$horizontal.classList.add('executor-icon-horizontal');
 
 	            var $li1 = window.document.createElement('li');
+
 	            $li1.appendChild(this.$horizontal);
 	            $ul.appendChild($li1);
 
 	            var $li2 = window.document.createElement('li');
+
 	            this.$vertical = window.document.createElement('i');
 	            this.$vertical.classList.add('executor-icon-vertical');
 	            $li2.appendChild(this.$vertical);
@@ -2576,6 +2561,14 @@
 	        value: function setup(horizontalHandler, verticalHandler) {
 	            this.$horizontal.addEventListener('click', horizontalHandler);
 	            this.$vertical.addEventListener('click', verticalHandler);
+	        }
+	    }], [{
+	        key: 'buildSpan',
+	        value: function buildSpan() {
+	            var $span = window.document.createElement('span');
+
+	            $span.appendChild(window.document.createTextNode('Layout: '));
+	            return $span;
 	        }
 	    }]);
 
@@ -2621,7 +2614,14 @@
 	    }, {
 	        key: 'setup',
 	        value: function setup(escapeHandler, clickHandler) {
-	            var handleKeydown = function handleKeydown(evt) {
+	            var handleKeydown = null;
+
+	            /**
+	             * Handle any keydown event. Work only if press escape button.
+	             *
+	             * @param {Object} evt Keydown event object.
+	             */
+	            handleKeydown = function (evt) {
 	                if (!MaximizeButton.isEscape(evt)) {
 	                    return;
 	                }
@@ -2630,22 +2630,24 @@
 	                window.document.body.removeEventListener('keydown', handleKeydown);
 	            };
 
-	            var handleMaximizeClick = function handleMaximizeClick() {
+	            /**
+	             * Handle click to maximize icon.
+	             */
+	            function handleMaximizeClick() {
 	                clickHandler();
 	                window.document.body.addEventListener('keydown', handleKeydown);
-	            };
+	            }
 
 	            this.$button.addEventListener('click', handleMaximizeClick);
-	        }
-	    }], [{
-	        key: 'isEscape',
-	        value: function isEscape(evt) {
-	            return evt.keyCode === MaximizeButton.ESCAPE_KEY_CODE;
 	        }
 	    }]);
 
 	    return MaximizeButton;
 	})();
+
+	MaximizeButton.isEscape = function (evt) {
+	    return evt.keyCode === MaximizeButton.ESCAPE_KEY_CODE;
+	};
 
 	MaximizeButton.ESCAPE_KEY_CODE = 27;
 
@@ -2683,13 +2685,18 @@
 	            this.$el.appendChild(window.document.createTextNode('Env: '));
 	            this.$select = window.document.createElement('select');
 	            this.$select.classList.add('executor-env');
+
 	            var $babel = window.document.createElement('option');
+
 	            $babel.value = 'babel';
 	            $babel.appendChild(window.document.createTextNode('Babel.js (ES6 + ES7)'));
 	            this.$select.appendChild($babel);
+
 	            var $browser = window.document.createElement('option');
+
 	            $browser.value = 'browser';
 	            $browser.appendChild(window.document.createTextNode('Current browser'));
+
 	            this.$select.appendChild($browser);
 	            this.$el.appendChild(this.$select);
 	        }
@@ -2733,49 +2740,28 @@
 
 	        this.$el = null;
 	        this.buffer = new Set();
-	        this.prevents = null;
 
 	        this.$el = window.document.createElement('div');
 	        this.$el.classList.add('executor-result');
 	    }
 
 	    _createClass(ResultsWindow, [{
-	        key: 'save',
-	        value: function save() {
+	        key: 'setup',
+	        value: function setup() {
 	            var _this = this;
 
-	            this.prevents = {};
+	            ['log', 'info', 'warn', 'error'].forEach(function (name) {
+	                var primaryMethod = window.console[name];
 
-	            ResultsWindow.METHODS.forEach(function (name) {
-	                _this.prevents[name] = window.console[name];
+	                window.console[name] = function () {
+	                    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	                        args[_key] = arguments[_key];
+	                    }
+
+	                    primaryMethod.apply(window.console, args);
+	                    _this.buffer.add(args);
+	                };
 	            });
-	        }
-	    }, {
-	        key: 'override',
-	        value: function override() {
-	            var _this2 = this;
-
-	            ResultsWindow.METHODS.forEach(function (name) {
-	                window.console[name] = _this2.add.bind(_this2);
-	            });
-	        }
-	    }, {
-	        key: 'prevent',
-	        value: function prevent() {
-	            var _this3 = this;
-
-	            ResultsWindow.METHODS.forEach(function (name) {
-	                window.console[name] = _this3.prevents[name];
-	            });
-	        }
-	    }, {
-	        key: 'add',
-	        value: function add() {
-	            for (var _len = arguments.length, text = Array(_len), _key = 0; _key < _len; _key++) {
-	                text[_key] = arguments[_key];
-	            }
-
-	            this.buffer.add(text);
 	        }
 	    }, {
 	        key: 'print',
@@ -2791,7 +2777,7 @@
 	    }], [{
 	        key: 'parse',
 	        value: function parse() {
-	            var result = '';
+	            var result = [];
 
 	            for (var _len2 = arguments.length, buffer = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
 	                buffer[_key2] = arguments[_key2];
@@ -2800,22 +2786,26 @@
 	            buffer.forEach(function (row) {
 	                row.forEach(function (item) {
 	                    try {
-	                        result += JSON.stringify(item) + ' ';
+	                        if (typeof item === 'string') {
+	                            result.push(item);
+	                        } else if (typeof item === 'function') {
+	                            result.push(item.toString());
+	                        } else {
+	                            result.push(JSON.stringify(item) + ' ');
+	                        }
 	                    } catch (e) {
-	                        result += e.message;
+	                        result.push(e.message);
 	                    }
 	                });
-	                result += '<br />';
+	                result.push('<br />');
 	            });
 
-	            return result;
+	            return result.join('');
 	        }
 	    }]);
 
 	    return ResultsWindow;
 	})();
-
-	ResultsWindow.METHODS = ['log', 'info', 'warn', 'error'];
 
 	exports['default'] = ResultsWindow;
 	module.exports = exports['default'];
@@ -2854,40 +2844,33 @@
 /***/ function(module, exports) {
 
 	module.exports = {
-		"private": true,
-		"name": "executor.js",
-		"version": "0.9.0",
-		"description": "Display and evaluate your JavaScript code.",
-		"author": "Piotr Kowalski <piecioshka@gmail.com> (http://piecioshka.pl/)",
-		"keywords": [
-			"hightlight",
-			"syntax",
-			"javascript",
-			"babel",
-			"ace",
-			"editor",
-			"embed"
-		],
-		"homepage": "http://piecioshka.pl/executor.js/demo/",
+		"name": "executor",
+		"version": "0.9.1",
 		"license": "MIT",
-		"bugs": "http://github.com/piecioshka/executor.js/issues",
-		"repository": {
-			"type": "git",
-			"url": "http://github.com/piecioshka/executor.js.git"
-		},
-		"scripts": {
-			"clear": "rm -rf node_modules bower_components"
-		},
 		"devDependencies": {
 			"babel-core": "^5.8.25",
 			"babel-eslint": "^4.1.3",
 			"babel-loader": "^5.3.2",
 			"css-loader": "^0.19.0",
-			"eslint": "^1.5.1",
-			"eslint-loader": "^1.0.0",
+			"eslint": "^1.6.0",
+			"eslint-config-piecioshka": "^1.0.7",
+			"eslint-loader": "latest",
 			"json-loader": "^0.5.3",
 			"style-loader": "^0.12.4",
 			"webpack": "^1.12.2"
+		},
+		"scripts": {
+			"clear": "rm -rf node_modules bower_components",
+			"lint": "eslint lib/scripts/"
+		},
+		"eslintConfig": {
+			"extends": "piecioshka",
+			"parser": "babel-eslint",
+			"env": {
+				"amd": true,
+				"browser": true,
+				"es6": true
+			}
 		}
 	};
 
@@ -2926,7 +2909,7 @@
 
 
 	// module
-	exports.push([module.id, ".executor {\n    border: 1px solid #999;\n    overflow: hidden;\n    position: relative;\n    font-size: 16px;\n    font-family: 'Menlo', Monaco, Consolas, 'Courier New', monospace;\n    width: 800px;\n    height: 460px;\n    border-radius: 5px;\n}\n\n.executor .executor-hidden-item {\n    display: none;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar {\n    background: rgba(210, 255, 84, 0.05);\n    height: 50px;\n    line-height: 50px;\n    border-bottom: 1px solid #999;\n    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\n    font-size: 14px;\n    overflow: hidden;\n    position: relative;\n\n    /* Disable select */\n    -webkit-touch-callout: none;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n}\n\n.executor .executor-toolbar .executor-toolbar-control {\n    padding: 0 15px;\n    float: left;\n    border-right: 1px solid #999;\n}\n\n.executor .executor-toolbar .executor-toolbar-control:last-child {\n    border-right: none;\n    padding-right: 0;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-auto {\n    margin: 0;\n    cursor: pointer;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-env {\n    cursor: context-menu;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control > ul {\n    list-style: none;\n    padding: 0;\n    margin: 0;\n    display: inline-block;\n}\n\n.executor .executor-toolbar .executor-toolbar-control > ul > li {\n    display: inline-block;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize {\n    background: #f8fdf6;\n    cursor: pointer;\n    text-decoration: none;\n    font-style: normal;\n    height: 14px;\n    width: 14px;\n    display: inline-block;\n    vertical-align: middle;\n    border-color: #5a5a5a;\n    outline: 2px solid #5a5a5a;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal:active,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical:active,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize:active {\n    border-color: #000;\n    outline: 2px solid #000;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal {\n    height: 7px;\n    border-bottom: 7px solid #5a5a5a;\n    margin-right: 10px;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical {\n    width: 7px;\n    border-right: 7px solid #5a5a5a;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-font-size {\n    width: 30px;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-execute {\n    cursor: pointer;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-main {\n    height: inherit;\n    width: inherit;\n    overflow: hidden;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-code {\n    background: rgba(210, 255, 84, 0.01);\n    color: #2f2f2f;\n    width: 100%;\n    height: 310px;\n    overflow: auto;\n    outline: none;\n    border: none;\n    margin: 0;\n    position: relative;\n}\n\n.executor .executor-code.executor-left-column {\n    width: 50%;\n    height: calc(460px - 50px);\n    float: left;\n    border-bottom: 0;\n}\n\n.executor .executor-code.executor-maximize {\n    height: inherit;\n    width: inherit;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-result {\n    background: #f1f1f1;\n    color: #c7254e;\n    height: 90px;\n    padding: 5px;\n    border-top: 1px solid #999;\n    overflow: auto;\n    position: relative;\n}\n\n.executor .executor-result.executor-right-column {\n    width: calc(50% - 10px - 1px);\n    height: calc(460px - 50px);\n    float: right;\n    border-top: none;\n    border-left: 1px solid #999;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor-version-label {\n    background: #fff;\n    position: absolute;\n    right: 0;\n    bottom: 0;\n    padding: 5px;\n    border-top: 1px solid #999;\n    border-left: 1px solid #999;\n    font-size: 11px;\n    font-style: normal;\n}\n", ""]);
+	exports.push([module.id, ".executor {\r\n    border: 1px solid #999;\r\n    overflow: hidden;\r\n    position: relative;\r\n    font-size: 16px;\r\n    font-family: 'Menlo', Monaco, Consolas, 'Courier New', monospace;\r\n    width: 800px;\r\n    height: 460px;\r\n    border-radius: 5px;\r\n}\r\n\r\n.executor .executor-hidden-item {\r\n    display: none;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar {\r\n    background: rgba(210, 255, 84, 0.05);\r\n    height: 50px;\r\n    line-height: 50px;\r\n    border-bottom: 1px solid #999;\r\n    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\r\n    font-size: 14px;\r\n    overflow: hidden;\r\n    position: relative;\r\n\r\n    /* Disable select */\r\n    -webkit-touch-callout: none;\r\n    -webkit-user-select: none;\r\n    -moz-user-select: none;\r\n    -ms-user-select: none;\r\n    user-select: none;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control {\r\n    padding: 0 15px;\r\n    float: left;\r\n    border-right: 1px solid #999;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control:last-child {\r\n    border-right: none;\r\n    padding-right: 0;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-auto {\r\n    margin: 0;\r\n    cursor: pointer;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-env {\r\n    cursor: context-menu;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control > ul {\r\n    list-style: none;\r\n    padding: 0;\r\n    margin: 0;\r\n    display: inline-block;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control > ul > li {\r\n    display: inline-block;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize {\r\n    background: #f8fdf6;\r\n    cursor: pointer;\r\n    text-decoration: none;\r\n    font-style: normal;\r\n    height: 14px;\r\n    width: 14px;\r\n    display: inline-block;\r\n    vertical-align: middle;\r\n    border-color: #5a5a5a;\r\n    outline: 2px solid #5a5a5a;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal:active,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical:active,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize:active {\r\n    border-color: #000;\r\n    outline: 2px solid #000;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal {\r\n    height: 7px;\r\n    border-bottom: 7px solid #5a5a5a;\r\n    margin-right: 10px;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical {\r\n    width: 7px;\r\n    border-right: 7px solid #5a5a5a;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-font-size {\r\n    width: 30px;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-execute {\r\n    cursor: pointer;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-main {\r\n    height: inherit;\r\n    width: inherit;\r\n    overflow: hidden;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-code {\r\n    background: rgba(210, 255, 84, 0.01);\r\n    color: #2f2f2f;\r\n    width: 100%;\r\n    height: 310px;\r\n    overflow: auto;\r\n    outline: none;\r\n    border: none;\r\n    margin: 0;\r\n    position: relative;\r\n}\r\n\r\n.executor .executor-code.executor-left-column {\r\n    width: 50%;\r\n    height: calc(460px - 50px);\r\n    float: left;\r\n    border-bottom: 0;\r\n}\r\n\r\n.executor .executor-code.executor-maximize {\r\n    height: inherit;\r\n    width: inherit;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-result {\r\n    background: #f1f1f1;\r\n    color: #c7254e;\r\n    height: 90px;\r\n    padding: 5px;\r\n    border-top: 1px solid #999;\r\n    overflow: auto;\r\n    position: relative;\r\n}\r\n\r\n.executor .executor-result.executor-right-column {\r\n    width: calc(50% - 10px - 1px);\r\n    height: calc(460px - 50px);\r\n    float: right;\r\n    border-top: none;\r\n    border-left: 1px solid #999;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor-version-label {\r\n    background: #fff;\r\n    position: absolute;\r\n    right: 0;\r\n    bottom: 0;\r\n    padding: 5px;\r\n    border-top: 1px solid #999;\r\n    border-left: 1px solid #999;\r\n    font-size: 11px;\r\n    font-style: normal;\r\n}\r\n", ""]);
 
 	// exports
 

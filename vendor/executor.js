@@ -236,6 +236,7 @@
 	            var _this = this;
 
 	            var runCode = function runCode() {
+	                _this.resultsWindow.setup();
 	                _this.execute(_this.selectEnvironment.getValue(), _this.aceHelper.getCode());
 	            };
 
@@ -285,11 +286,6 @@
 
 	            // Ad 6. Execute
 	            this.executeButton.setup(runCode);
-
-	            // Results board
-	            // -------------
-
-	            this.resultsWindow.setup();
 
 	            this.$main.appendChild(this.resultsWindow.$el);
 	        }
@@ -2739,6 +2735,8 @@
 	        _classCallCheck(this, ResultsWindow);
 
 	        this.$el = null;
+	        this.buffer = null;
+
 	        this.buffer = new Set();
 
 	        this.$el = window.document.createElement('div');
@@ -2751,15 +2749,12 @@
 	            var _this = this;
 
 	            ['log', 'info', 'warn', 'error'].forEach(function (name) {
-	                var primaryMethod = window.console[name];
-
 	                window.console[name] = function () {
 	                    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 	                        args[_key] = arguments[_key];
 	                    }
 
-	                    primaryMethod.apply(window.console, args);
-	                    _this.buffer.add(args);
+	                    return _this.buffer.add(args);
 	                };
 	            });
 	        }
@@ -2845,7 +2840,7 @@
 
 	module.exports = {
 		"name": "executor",
-		"version": "0.9.1",
+		"version": "0.9.2",
 		"license": "MIT",
 		"devDependencies": {
 			"babel-core": "^5.8.25",
@@ -2860,7 +2855,7 @@
 			"webpack": "^1.12.2"
 		},
 		"scripts": {
-			"clear": "rm -rf node_modules bower_components",
+			"clear": "rm -rf node_modules/ bower_components/",
 			"lint": "eslint lib/scripts/"
 		},
 		"eslintConfig": {
@@ -2909,7 +2904,7 @@
 
 
 	// module
-	exports.push([module.id, ".executor {\r\n    border: 1px solid #999;\r\n    overflow: hidden;\r\n    position: relative;\r\n    font-size: 16px;\r\n    font-family: 'Menlo', Monaco, Consolas, 'Courier New', monospace;\r\n    width: 800px;\r\n    height: 460px;\r\n    border-radius: 5px;\r\n}\r\n\r\n.executor .executor-hidden-item {\r\n    display: none;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar {\r\n    background: rgba(210, 255, 84, 0.05);\r\n    height: 50px;\r\n    line-height: 50px;\r\n    border-bottom: 1px solid #999;\r\n    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\r\n    font-size: 14px;\r\n    overflow: hidden;\r\n    position: relative;\r\n\r\n    /* Disable select */\r\n    -webkit-touch-callout: none;\r\n    -webkit-user-select: none;\r\n    -moz-user-select: none;\r\n    -ms-user-select: none;\r\n    user-select: none;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control {\r\n    padding: 0 15px;\r\n    float: left;\r\n    border-right: 1px solid #999;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control:last-child {\r\n    border-right: none;\r\n    padding-right: 0;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-auto {\r\n    margin: 0;\r\n    cursor: pointer;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-env {\r\n    cursor: context-menu;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control > ul {\r\n    list-style: none;\r\n    padding: 0;\r\n    margin: 0;\r\n    display: inline-block;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control > ul > li {\r\n    display: inline-block;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize {\r\n    background: #f8fdf6;\r\n    cursor: pointer;\r\n    text-decoration: none;\r\n    font-style: normal;\r\n    height: 14px;\r\n    width: 14px;\r\n    display: inline-block;\r\n    vertical-align: middle;\r\n    border-color: #5a5a5a;\r\n    outline: 2px solid #5a5a5a;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal:active,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical:active,\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize:active {\r\n    border-color: #000;\r\n    outline: 2px solid #000;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal {\r\n    height: 7px;\r\n    border-bottom: 7px solid #5a5a5a;\r\n    margin-right: 10px;\r\n}\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical {\r\n    width: 7px;\r\n    border-right: 7px solid #5a5a5a;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-font-size {\r\n    width: 30px;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-toolbar .executor-toolbar-control .executor-execute {\r\n    cursor: pointer;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-main {\r\n    height: inherit;\r\n    width: inherit;\r\n    overflow: hidden;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-code {\r\n    background: rgba(210, 255, 84, 0.01);\r\n    color: #2f2f2f;\r\n    width: 100%;\r\n    height: 310px;\r\n    overflow: auto;\r\n    outline: none;\r\n    border: none;\r\n    margin: 0;\r\n    position: relative;\r\n}\r\n\r\n.executor .executor-code.executor-left-column {\r\n    width: 50%;\r\n    height: calc(460px - 50px);\r\n    float: left;\r\n    border-bottom: 0;\r\n}\r\n\r\n.executor .executor-code.executor-maximize {\r\n    height: inherit;\r\n    width: inherit;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor .executor-result {\r\n    background: #f1f1f1;\r\n    color: #c7254e;\r\n    height: 90px;\r\n    padding: 5px;\r\n    border-top: 1px solid #999;\r\n    overflow: auto;\r\n    position: relative;\r\n}\r\n\r\n.executor .executor-result.executor-right-column {\r\n    width: calc(50% - 10px - 1px);\r\n    height: calc(460px - 50px);\r\n    float: right;\r\n    border-top: none;\r\n    border-left: 1px solid #999;\r\n}\r\n\r\n/* ------------------------------------------------------------------------------------------------------------------ */\r\n\r\n.executor-version-label {\r\n    background: #fff;\r\n    position: absolute;\r\n    right: 0;\r\n    bottom: 0;\r\n    padding: 5px;\r\n    border-top: 1px solid #999;\r\n    border-left: 1px solid #999;\r\n    font-size: 11px;\r\n    font-style: normal;\r\n}\r\n", ""]);
+	exports.push([module.id, ".executor {\n    border: 1px solid #999;\n    overflow: hidden;\n    position: relative;\n    font-size: 16px;\n    font-family: 'Menlo', Monaco, Consolas, 'Courier New', monospace;\n    width: 800px;\n    height: 460px;\n    border-radius: 5px;\n}\n\n.executor .executor-hidden-item {\n    display: none;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar {\n    background: rgba(210, 255, 84, 0.05);\n    height: 50px;\n    line-height: 50px;\n    border-bottom: 1px solid #999;\n    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\n    font-size: 14px;\n    overflow: hidden;\n    position: relative;\n\n    /* Disable select */\n    -webkit-touch-callout: none;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n}\n\n.executor .executor-toolbar .executor-toolbar-control {\n    padding: 0 15px;\n    float: left;\n    border-right: 1px solid #999;\n}\n\n.executor .executor-toolbar .executor-toolbar-control:last-child {\n    border-right: none;\n    padding-right: 0;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-auto {\n    margin: 0;\n    cursor: pointer;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-env {\n    cursor: context-menu;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control > ul {\n    list-style: none;\n    padding: 0;\n    margin: 0;\n    display: inline-block;\n}\n\n.executor .executor-toolbar .executor-toolbar-control > ul > li {\n    display: inline-block;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize {\n    background: #f8fdf6;\n    cursor: pointer;\n    text-decoration: none;\n    font-style: normal;\n    height: 14px;\n    width: 14px;\n    display: inline-block;\n    vertical-align: middle;\n    border-color: #5a5a5a;\n    outline: 2px solid #5a5a5a;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal:active,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical:active,\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-maximize:active {\n    border-color: #000;\n    outline: 2px solid #000;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-horizontal {\n    height: 7px;\n    border-bottom: 7px solid #5a5a5a;\n    margin-right: 10px;\n}\n\n.executor .executor-toolbar .executor-toolbar-control .executor-icon-vertical {\n    width: 7px;\n    border-right: 7px solid #5a5a5a;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-font-size {\n    width: 30px;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-toolbar .executor-toolbar-control .executor-execute {\n    cursor: pointer;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-main {\n    height: inherit;\n    width: inherit;\n    overflow: hidden;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-code {\n    background: rgba(210, 255, 84, 0.01);\n    color: #2f2f2f;\n    width: 100%;\n    height: 310px;\n    overflow: auto;\n    outline: none;\n    border: none;\n    margin: 0;\n    position: relative;\n}\n\n.executor .executor-code.executor-left-column {\n    width: 50%;\n    height: calc(460px - 50px);\n    float: left;\n    border-bottom: 0;\n}\n\n.executor .executor-code.executor-maximize {\n    height: inherit;\n    width: inherit;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor .executor-result {\n    background: #f1f1f1;\n    color: #c7254e;\n    height: 90px;\n    padding: 5px;\n    border-top: 1px solid #999;\n    overflow: auto;\n    position: relative;\n}\n\n.executor .executor-result.executor-right-column {\n    width: calc(50% - 10px - 1px);\n    height: calc(460px - 50px);\n    float: right;\n    border-top: none;\n    border-left: 1px solid #999;\n}\n\n/* ------------------------------------------------------------------------------------------------------------------ */\n\n.executor-version-label {\n    background: #fff;\n    position: absolute;\n    right: 0;\n    bottom: 0;\n    padding: 5px;\n    border-top: 1px solid #999;\n    border-left: 1px solid #999;\n    font-size: 11px;\n    font-style: normal;\n}\n", ""]);
 
 	// exports
 

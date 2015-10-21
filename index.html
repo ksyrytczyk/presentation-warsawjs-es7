@@ -185,13 +185,13 @@ console.log('2 ** 8 is ', a ** b);
 console.log('Math.pow(2, 8) is ', Math.pow(a, b));
 
 a = 2; b = 16;
-console.log('2 ** 16 is', a **= b);
+console.log('2 ** 16 is ', a **= b);
 
 a = Infinity; b = -1;
-console.log('Infinity ** -1 is', a ** b);
+console.log('Infinity ** -1 is ', a ** b);
 
 a = NaN; b = 0;
-console.log('NaN ** 0 is', a ** b);
+console.log('NaN ** 0 is ', a ** b);
 
 a = 0; b = Infinity;
 console.log('0 ** Infinity', a ** b);
@@ -306,7 +306,7 @@ let fnList = {
     preventExtensions: () => { Object.seal(obj) }
 };
 
-Object.observe(obj, (changes) => { console.log(changes); });
+Object.observe(obj, (changes) => { console.debug(changes); });
 
 setTimeout(() => { fnList['add'](); }, 0);
 setTimeout(() => { fnList['delete'](); }, 1000);
